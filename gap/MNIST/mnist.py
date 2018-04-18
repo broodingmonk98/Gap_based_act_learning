@@ -157,7 +157,7 @@ def our_method(X,clf,t):
     dist1 = dist[:,-t]
     dist2 = dist[:,-(t+1)]
     gap = dist1-dist2
-    return np.argmin(gap)
+    return np.argsort(gap)[:num]
 
 #Function to return closest point
 def closest_to_plane(X,clf):
@@ -168,7 +168,8 @@ def closest_to_plane(X,clf):
 #Train SVM using our method
 r = 0.998
 r2 = 0.995
-till = 100
+till = 20
+num = 10
 #X_train = X.data.numpy()
 #X_test  = X_t.data.numpy()
 #X = np.concatenate((X_train,X_test))
@@ -192,7 +193,7 @@ for i in range(1,till):
     print("Done. Test loss....")
     err_rand.append(clf.score(X_test, y_test))
     print("Done. Picking.....")
-    pick = np.random.randint(0,X_ulabel.shape[0])
+    pick = np.random.randint(0,X_ulabel.shape[0],num)
     idx = np.ones(X_ulabel.shape[0],dtype=bool)
     idx[pick] = False
     X_train = np.insert(X_train,(0),X_ulabel[pick],axis=0)
