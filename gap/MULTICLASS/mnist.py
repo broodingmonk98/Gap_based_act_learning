@@ -8,8 +8,8 @@ import pickle
 import numpy as np
 import sys
 
-test_size=0.95
-pool_size= 0.7
+test_size=0.98
+pool_size= 45/49
 random_state=0
 num = 5
 kernel = 'poly'
@@ -34,7 +34,12 @@ clf = ovr(SVC(kernel=kernel))
 #y = digits.target
 #lb = LabelBinarizer()
 #y = lb.fit_transform(y)
-X, y= X[:2000],y[:2000]
+XX,yy = X,y;
+size = [1000,2000,5000,10000]
+split= [0.9,0.95,0.98,0.99]
+split2= [5/9, 15/19, 45/49, 95/99]
+
+X, y= X[:5000],y[:5000]
 #split train and test:
 X_train, X1, y_train, y1 = train_test_split(X,y,random_state=random_state,test_size=test_size)
 X_test, X_pool, y_test, y_pool = train_test_split(X1,y1, random_state=random_state,test_size=pool_size)
@@ -74,16 +79,17 @@ err_gap = [[],[],[],[],[]]
 print("Gap based picking")
 #split train and test again in same manner
 
-for t in range(1,4):
+for t in range(0,4):
     print("Iteration ",t)
-    X_train, X1, y_train, y1 = train_test_split(X,y,random_state=random_state,test_size=test_size)
-    X_test, X_pool, y_test, y_pool = train_test_split(X1,y1, random_state=random_state,test_size=pool_size)
+    X,y = XX[:size[t]], yy[:size[t]]
+    X_train, X1, y_train, y1 = train_test_split(X,y,random_state=random_state,test_size=split[t])
+    X_test, X_pool, y_test, y_pool = train_test_split(X1,y1, random_state=random_state,test_size=split2[t])
     for i in range(0,100):
         clf.fit(X_train,y_train)
         err_gap[t].append(clf.score(X_test,y_test))
         print(i,err_gap[t][-1])
 
-        pick = gap_based_method(X_pool,clf,t=t,num=num)
+        pick = gap_based_method(X_pool,clf,t=t+1,num=num)
         idx = np.ones(X_pool.shape[0],dtype=bool)
         idx[pick] = False
         X_train = np.insert(X_train,(0),X_pool[pick],axis=0)
@@ -102,9 +108,9 @@ print("Comparing the different elements")
 X_axis = int(X.shape[0]*(1-test_size))+np.arange(0,100)*num
 plt.plot(X_axis,err_rand,'g+',label='Random')
 #plt.plot(err_closest,'bo',label='Closest')
-plt.plot(X_axis,err_gap[1],'y1',label='Gap based1')
-plt.plot(X_axis,err_gap[2],'b2',label='Gap based2')
-plt.plot(X_axis,err_gap[3],'r3',label='Gap based3')
+plt.plot(X_axis,err_gap[0],'y1',label='Gap based1')
+plt.plot(X_axis,err_gap[1],'b2',label='Gap based2')
+plt.plot(X_axis,err_gap[2],'r3',label='Gap based3')
 #plt.plot(X_axis,err_gap[4],'p^',label='Gap based4')
 #plt.plot(X_axis,err_gap,'c^',label='Gap based5')
 plt.xlabel('Points in training set')
